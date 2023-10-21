@@ -7,9 +7,6 @@ module.exports = {
         await knex.schema.createTable(tables.usersPlanets, (table) => {
             table.increments('id')
                 .primary();
-            table.boolean('explored')
-                .defaultTo(false)
-                .notNullable();
             table.integer('user_id')
                 .unsigned()
                 .notNullable();

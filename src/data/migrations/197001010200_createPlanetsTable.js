@@ -10,13 +10,16 @@ module.exports = {
             table.string('name', 255)
                 .notNullable()
                 .unique();
-            table.float('time_to_explore')
-                .notNullable();
-            table.float('time_to_discover')
-                .notNullable();
+            // table.float('time_to_explore')
+            //     .notNullable();
+            // table.float('time_to_discover')
+            //     .notNullable();
             table.boolean('discoverd')
                 .notNullable()
-                .defaultTo(false);
+                .defaultTo(true);
+            table.integer('image')
+                .notNullable();
+
         });
     },
     down: (knex) => {

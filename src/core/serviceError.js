@@ -28,6 +28,10 @@ class ServiceError extends Error {
     return new ServiceError(FORBIDDEN, message, details);
   }
 
+  static notImplemented(message, details) {
+    return new ServiceError(NOT_IMPLEMENTED, message, details);
+  }
+
   get isNotFound() {
     return this.code === NOT_FOUND;
   }
@@ -42,6 +46,10 @@ class ServiceError extends Error {
 
   get isForbidden() {
     return this.code === FORBIDDEN;
+  }
+
+  get isNotImplemented() {
+    return this.code === NOT_IMPLEMENTED;
   }
 }
 

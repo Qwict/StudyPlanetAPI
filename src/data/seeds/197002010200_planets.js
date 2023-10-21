@@ -3,18 +3,31 @@ module.exports = {
         await knex('planets').insert([{
             id: 1,
             name: 'Earth',
-            time_to_explore: 0.5,
-            time_to_discover: 0.25,
+            image: 2131165272,
         }, {
             id: 2,
             name: 'Mars',
-            time_to_explore: 1.5,
-            time_to_discover: 1.0,
+            image: 2131165277,
         }, {
             id: 3,
             name: 'Europa',
-            time_to_explore: 2.5,
-            time_to_discover: 2.0,
+            image: 2131165273,
+        }, {
+            id: 4,
+            name: 'Titan',
+            image: 2131165277,
+        }, {
+            id: 5,
+            name: 'Venus',
+            image: 2131165277,
+        }, {
+            id: 6,
+            name: 'Mercury',
+            image: 2131165277,
+        }, {
+            id: 7,
+            name: 'Pluto',
+            image: 2131165277,
         }]);
     },
 };

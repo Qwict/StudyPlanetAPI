@@ -1,150 +1,163 @@
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const {
   getLogger,
 } = require('../core/logging');
 const ServiceError = require('../core/serviceError');
 const userRepository = require('../repository/user');
 
+formatUser = (user) => {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    experience: user.experience,
+    discoveredPlanets: user.discoveredPlanets,
+  };
+}
+
 const debugLog = (message, meta = {}) => {
   if (!this.logger) this.logger = getLogger();
   this.logger.debug(message, meta);
 };
 
-/**
- * Register a new user
- *
- * @param {object} user - The user's data.
- * @param {string} user.name - The user's name.
- * @param {string} user.email - The user's email.
- */
-const register = ({
-  name,
-  auth0id,
-  email,
-}) => {
-  debugLog('Creating a new user', {
-    name,
-  });
-  return userRepository.create({
-    name,
-    auth0id,
-    email,
-  });
+const getUserById = async (id) => {
+  debugLog(`Getting user with id ${id}`);
+  let user = await userRepository.findById(id);
+  if (!user) {
+    throw ServiceError.notFound(`There is no user with id ${id}`);
+  }
+  console.log("USER", user)
+  user = formatUser(user);
+  console.log("USER", user)
+  return user;
 };
 
-
-/**
- * Get all users.
- */
-const getAll = async () => {
-  debugLog('Fetching all users');
-  const data = await userRepository.findAll();
-  const totalCount = await userRepository.findCount();
-  return {
-    data,
-    count: totalCount,
+const generateJavaWebToken = async (user) => {
+  debugLog(`Generating JWT for ${user.email}`);
+  const jwtPackage = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
   };
+  const token = jwt.sign(jwtPackage, process.env.JWT_SECRET, {
+    expiresIn: 36000,
+    // issuer: process.env.AUTH_ISSUER,
+    // audience: process.env.AUTH_AUDIENCE,
+  });
+  return token;
 };
 
-/**
- * Get the user with the given id.
- *
- * @param {string} id - Id of the user to get.
- *
- * @throws {ServiceError} One of:
- * - NOT_FOUND: No user with the given id could be found.
- */
-const getById = async (id) => {
-  debugLog(`Fetching user with id ${id}`);
-  const user = await userRepository.findById(id);
-
-  if (!user) {
-    throw ServiceError.notFound(`No user with id ${id} exists`, {
-      id,
-    });
-  }
-
-  return user;
-};
-
-const getByAuth0Id = async (auth0id) => {
-  debugLog(`Fetching user with auth0id ${auth0id}`);
-  const user = await userRepository.findByAuth0Id(auth0id);
-
-  if (!user) {
-    throw ServiceError.notFound(`No user with id ${auth0id} exists`, {
-      auth0id,
-    });
-  }
-
-  return user;
-};
-
-/**
- * Update an existing user.
- *
- * @param {string} [user.email] - emial of the user.
- *
- * @throws {ServiceError} One of:
- * - NOT_FOUND: No user with the given id could be found.
- */
-const getByEmail = async (email) => {
-  debugLog(`Fetching user with email ${email}`);
-  const user = await userRepository.findByEmail(email);
-  if (!user) {
-    throw ServiceError.notFound(`No user with email ${email} exists`, {
-      email,
-    });
-  }
-  return user;
-};
-
-/**
- * Update an existing user.
- *
- * @param {string} id - Id of the user to update.
- * @param {object} user - User to save.
- * @param {string} [user.name] - Name of the user.
- *
- * @throws {ServiceError} One of:
- * - NOT_FOUND: No user with the given id could be found.
- */
-const updateById = (id, {
-  name,
+const login = async ({
+  email,
+  password,
 }) => {
-  debugLog(`Updating user with id ${id}`, {
-    name,
-  });
-  return userRepository.updateById(id, {
-    name,
-  });
+  debugLog(`Verifying user with email ${email}`);
+  const verification = {
+    token: undefined,
+    validated: false,
+  };
+  const user = await userRepository.findByMail(email);
+
+  if (!user) {
+    throw ServiceError.notFound(`There is no user with email ${email}`);
+  }
+  const result = user.hash === crypto.pbkdf2Sync(password, user.salt, 10000, 64, 'sha256').toString('base64');
+  if (result) {
+    const token = await generateJavaWebToken(user);
+    verification.token = token;
+    verification.validated = true;
+    verification.user = user;
+  } else {
+    throw ServiceError.forbidden(`Verification failed for user with email ${email}`);
+  }
+
+  return verification;
 };
 
+const register = async ({
+  name,
+  email,
+  password,
+}) => {
+  debugLog(`Creating user with name ${name} and email ${email}`);
+  const salt = crypto.randomBytes(128).toString('base64');
+  const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha256').toString('base64');
 
-/**
- * Delete an existing user.
- *
- * @param {string} id - Id of the user to delete.
- *
- * @throws {ServiceError} One of:
- * - NOT_FOUND: No user with the given id could be found.
- */
-const deleteById = async (id) => {
-  debugLog(`Deleting user with id ${id}`);
-  const deleted = await userRepository.deleteById(id);
+  const newUser = {
+    name,
+    email,
+    salt,
+    hash,
+  };
+  try {
+    const user = await userRepository.create(newUser);
 
-  if (!deleted) {
-    throw ServiceError.notFound(`No user with id ${id} exists`, {
-      id,
+    const jwtPackage = {
+      name: user.name,
+      email: user.email,
+      permission: user.role,
+    };
+
+    notificationFactory.create({
+      userId: user.id,
+      date: new Date().toString(),
+      audience: 'private',
+      subject: 'Welcome!',
+      text: `Welcome to delaware shipping, ${user.name ? user.name : user.email}`,
     });
+    return jwt.sign(jwtPackage, process.env.JWT_SECRET, {
+      expiresIn: 36000,
+      issuer: process.env.AUTH_ISSUER,
+      audience: process.env.AUTH_AUDIENCE,
+    });
+  } catch (error) {
+    if (error.message === 'DUPLICATE_ENTRY') {
+      throw ServiceError.duplicate('DUPLICATE ENTRY');
+    } else {
+      throw ServiceError.validationFailed(error.message);
+    }
   }
 };
+
+const startExploring = async (planetId, ctx) => {
+  const logger = getLogger();
+
+  // get user from database
+
+  // const user = await userRepository.findById(ctx.state.user.auth0id);
+  logger.info(`USER:`);
+
+  // check if user is not currently exploring or discovering
+
+  // check if user has relation with planet
+
+  logger.info(`START EXPLORING`);
+};
+
+const stopExploring = async () => {
+  const logger = getLogger();
+  logger.info(`STOP EXPLORING`);
+};
+
+const startDiscovering = async () => {
+  const logger = getLogger();
+  logger.info(`START DISCOVERING`);
+};
+
+const stopDiscovering = async () => {
+  const logger = getLogger();
+  logger.info(`STOP DISCOVERING`);
+  // get array of planets that are not discovered yet by the user
+
+  // depending on selected time create percentage chance of discovering a planet
+
+  // if planet is discovered create relation between user and planet
+};
+
 
 module.exports = {
   register,
-  getAll,
-  getById,
-  getByAuth0Id,
-  getByEmail,
-  updateById,
-  deleteById,
+  login,
+  getUserById,
 };

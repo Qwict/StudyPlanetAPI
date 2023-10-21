@@ -17,10 +17,6 @@ const {
     shutdownData,
 } = require('./data');
 const installRest = require('./rest');
-const {
-    checkJwtToken,
-} = require('./core/auth');
-
 
 const NODE_ENV = config.get('env');
 const CORS_ORIGINS = config.get('cors.origins');
@@ -42,7 +38,6 @@ module.exports = async function createServer() {
     const logger = getLogger();
     const app = new Koa();
 
-
     // Add CORS
     app.use(
         koaCors({
@@ -58,13 +53,9 @@ module.exports = async function createServer() {
         }),
     );
 
-
-    app.use(checkJwtToken());
-
     app.use(bodyParser());
 
     app.use(async (ctx, next) => {
-        const logger = getLogger();
         logger.info(`${emoji.get('fast_forward')} ${ctx.method} ${ctx.url}`);
 
         const getStatusEmoji = () => {
@@ -102,13 +93,12 @@ module.exports = async function createServer() {
                 ctx.status = 404;
             }
         } catch (error) {
-            const logger = getLogger();
             logger.error('Error occured while handling a request', {
                 error: serializeError(error),
             });
 
             let statusCode = error.status || 500;
-            let errorBody = {
+            const errorBody = {
                 code: error.code || 'INTERNAL_SERVER_ERROR',
                 message: error.message,
                 details: error.details || {},
@@ -131,13 +121,9 @@ module.exports = async function createServer() {
                 if (error.isForbidden) {
                     statusCode = 403;
                 }
-            }
-
-            if (ctx.state.jwtOriginalError) {
-                statusCode = 401;
-                errorBody.code = 'UNAUTHORIZED';
-                errorBody.message = ctx.state.jwtOriginalError.message;
-                errorBody.details.jwtOriginalError = serializeError(ctx.state.jwtOriginalError);
+                if (error.isDuplicate) {
+                    statusCode = 409;
+                }
             }
 
             ctx.status = statusCode;
@@ -145,9 +131,7 @@ module.exports = async function createServer() {
         }
     });
 
-
     installRest(app);
-
     return {
         getApp() {
             return app;
@@ -163,11 +147,9 @@ module.exports = async function createServer() {
         },
 
         async stop() {
-            {
-                app.removeAllListeners();
-                await shutdownData();
-                getLogger().info('Goodbye');
-            }
+            app.removeAllListeners();
+            await shutdownData();
+            getLogger().info('Goodbye');
         },
     };
 };

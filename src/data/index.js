@@ -36,7 +36,7 @@ const getKnexLogger = (logger, level) => (message) => {
 function checkIfValidIP(str) {
     // Regular expression to check if string is a IP address
     const regexExp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/gi;
-  
+
     return regexExp.test(str);
 }
 
@@ -46,11 +46,11 @@ async function initializeData() {
     const sslCheck = checkIfValidIP(DATABASE_HOST);
     let ssl = {};
     if (DATABASE_HOST === 'localhost' && NODE_ENV !== 'production') {
-      ssl = undefined;
+        ssl = undefined;
     } else {
-      ssl = {
-        rejectUnauthorized: sslCheck,
-      };
+        ssl = {
+            rejectUnauthorized: sslCheck,
+        };
     }
 
     const knexOptions = {
@@ -163,6 +163,7 @@ function getKnex() {
 const tables = {
     users: 'users',
     planets: 'planets',
+    actions: 'actions',
     usersPlanets: 'users_planets',
 };
 

@@ -9,54 +9,46 @@ const {
 const userService = require('../service/user');
 
 const validate = require('./_validation');
+const {
+  getLogger,
+} = require('../core/logging');
 
-const getAllUsers = async (ctx) => {
-  const users = await userService.getAll();
-  ctx.body = users;
-};
-getAllUsers.validationScheme = null;
-
-const getUserByAuth0Id = async (ctx) => {
-  let userId = 0;
-  try {
-    const user = await userService.getByAuth0Id(ctx.state.user.sub);
-    userId = user.id;
-  } catch (err) {
-    await addUserInfo(ctx);
-    userId = await userService.register({
-      auth0id: ctx.state.user.sub,
-      name: ctx.state.user.name,
-      email: ctx.state.user.email,
-    });
-  }
-  ctx.body = await userService.getById(userId);
-};
-// getUserByAuth0Id.validationScheme = {
-//   params: {
-//     id: Joi.number().integer().positive(),
-//   },
-// };
-
-const updateUserById = async (ctx) => {
-  const user = await userService.updateById(ctx.params.id, ctx.request.body);
+const getUserById = async (ctx) => {
+  const user = await userService.getUserById(ctx.params.id);
   ctx.body = user;
-};
-updateUserById.validationScheme = {
+}
+getUserById.validationScheme = {
   params: {
-    id: Joi.number().integer().positive(),
-  },
-  body: {
-    name: Joi.string().max(255),
+    id: Joi.number().required(),
   },
 };
 
-const deleteUserById = async (ctx) => {
-  await userService.deleteById(ctx.params.id);
-  ctx.status = 204;
+const login = async (ctx) => {
+  const response = await userService.login(ctx.request.body);
+  ctx.body = response;
+  if (response.validated) {
+    ctx.status = 201;
+  } else {
+    ctx.status = 401;
+  }
 };
-deleteUserById.validationScheme = {
-  params: {
-    id: Joi.number().integer().positive(),
+login.validationScheme = {
+  body: {
+    email: Joi.string(),
+    password: Joi.string(),
+  },
+};
+
+const register = async (ctx) => {
+  const response = await userService.register(ctx.request.body);
+  ctx.body = response;
+  ctx.status = 201;
+};
+register.validationScheme = {
+  body: {
+    name: Joi.string(),
+    email: Joi.string(),
+    password: Joi.string(),
   },
 };
 
@@ -67,12 +59,12 @@ deleteUserById.validationScheme = {
  */
 module.exports = function installUsersRoutes(app) {
   const router = new Router({
-    prefix: '/user',
+    prefix: '/users',
   });
 
-  router.get('/', getUserByAuth0Id);
-  router.put('/:id', validate(updateUserById.validationScheme), updateUserById);
-  router.delete('/:id', validate(deleteUserById.validationScheme), deleteUserById);
+  router.post('/register', validate(register.validationScheme), register);
+  router.post('/login', validate(login.validationScheme), login);
+  router.get('/:id', validate(getUserById.validationScheme), getUserById);
 
   app
     .use(router.routes())

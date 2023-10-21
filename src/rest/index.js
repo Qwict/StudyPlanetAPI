@@ -3,6 +3,7 @@ const Router = require('@koa/router');
 // const installPlanetRouter = require('./_planet');
 const installUserRouter = require('./_user');
 const installHealthRouter = require('./_health');
+const installActionsRouter = require('./_action');
 
 
 const {
@@ -24,7 +25,7 @@ module.exports = (app) => {
     // installPlanetRouter(router);
     installHealthRouter(router);
     installUserRouter(router);
-
+    installActionsRouter(router);
 
     logger.info('Routes installed');
     app.use(router.routes()).use(router.allowedMethods());
