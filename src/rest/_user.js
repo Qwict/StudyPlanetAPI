@@ -42,7 +42,11 @@ login.validationScheme = {
 const register = async (ctx) => {
   const response = await userService.register(ctx.request.body);
   ctx.body = response;
-  ctx.status = 201;
+  if (response.validated) {
+    ctx.status = 201;
+  } else {
+    ctx.status = 401;
+  }
 };
 register.validationScheme = {
   body: {

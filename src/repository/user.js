@@ -5,6 +5,8 @@ const {
 const {
   getLogger,
 } = require('../core/logging');
+const ServiceError = require('../core/serviceError');
+const actionRepository = require('./action');
 
 /**
  * Find a user with the given id.
@@ -38,8 +40,44 @@ const addExperience = async (userId, experience) => {
     });
 }
 
+
+async function create({
+  name,
+  email,
+  salt,
+  hash,
+}) {
+  // is there a better way to catch a duplicate error?
+  const existingUser = await findByMail(email);
+  const logger = getLogger();
+  if (existingUser !== undefined) {
+    logger.error('Error in create', {
+      error,
+    });
+    throw error;
+  }
+  try {
+    const [id] = await getKnex()(tables.users).insert({
+      name,
+      email,
+      salt,
+      hash,
+    });
+    await actionRepository.createActionByUserId(id, {});
+    logger.info(`User ${email} created`);
+    return findById(id);
+  } catch (error) {
+    const logger = getLogger();
+    logger.error('Error in create', {
+      error,
+    });
+    throw ServiceError.forbidden('Error creating user');
+  }
+}
+
+// For local use only! Use findById() : will return planets!!!
 async function findByMail(email) {
-  return getKnex()(tables.users)
+  return await getKnex()(tables.users)
     .where('email', email).first();
 }
 
@@ -48,4 +86,5 @@ module.exports = {
   findByMail,
   findById,
   addExperience,
+  create,
 };

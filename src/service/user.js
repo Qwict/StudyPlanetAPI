@@ -27,9 +27,7 @@ const getUserById = async (id) => {
   if (!user) {
     throw ServiceError.notFound(`There is no user with id ${id}`);
   }
-  console.log("USER", user)
   user = formatUser(user);
-  console.log("USER", user)
   return user;
 };
 
@@ -41,7 +39,7 @@ const generateJavaWebToken = async (user) => {
     email: user.email,
   };
   const token = jwt.sign(jwtPackage, process.env.JWT_SECRET, {
-    expiresIn: 36000,
+    expiresIn: "8h",
     // issuer: process.env.AUTH_ISSUER,
     // audience: process.env.AUTH_AUDIENCE,
   });
@@ -56,9 +54,10 @@ const login = async ({
   const verification = {
     token: undefined,
     validated: false,
+    user: undefined,
   };
-  const user = await userRepository.findByMail(email);
-
+  let userWithoutPlanets = await userRepository.findByMail(email);
+  let user = await userRepository.findById(userWithoutPlanets.id);
   if (!user) {
     throw ServiceError.notFound(`There is no user with email ${email}`);
   }
@@ -67,7 +66,7 @@ const login = async ({
     const token = await generateJavaWebToken(user);
     verification.token = token;
     verification.validated = true;
-    verification.user = user;
+    verification.user = formatUser(user);
   } else {
     throw ServiceError.forbidden(`Verification failed for user with email ${email}`);
   }
@@ -90,27 +89,22 @@ const register = async ({
     salt,
     hash,
   };
+
   try {
     const user = await userRepository.create(newUser);
 
-    const jwtPackage = {
-      name: user.name,
-      email: user.email,
-      permission: user.role,
+    debugLog(`Created user with name ${name} and email ${email}`);
+
+    const token = await generateJavaWebToken(user);
+
+
+    const verification = {
+      token: token,
+      validated: true,
+      user: formatUser(user),
     };
 
-    notificationFactory.create({
-      userId: user.id,
-      date: new Date().toString(),
-      audience: 'private',
-      subject: 'Welcome!',
-      text: `Welcome to delaware shipping, ${user.name ? user.name : user.email}`,
-    });
-    return jwt.sign(jwtPackage, process.env.JWT_SECRET, {
-      expiresIn: 36000,
-      issuer: process.env.AUTH_ISSUER,
-      audience: process.env.AUTH_AUDIENCE,
-    });
+    return verification;
   } catch (error) {
     if (error.message === 'DUPLICATE_ENTRY') {
       throw ServiceError.duplicate('DUPLICATE ENTRY');
