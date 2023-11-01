@@ -11,6 +11,7 @@ formatUser = (user) => {
     id: user.id,
     name: user.name,
     email: user.email,
+    userUuid: user.uuid,
     experience: user.experience,
     discoveredPlanets: user.discoveredPlanets,
   };

@@ -8,6 +8,14 @@ const {
 const ServiceError = require('../core/serviceError');
 const actionRepository = require('./action');
 
+formatPlanet = (planet) => {
+  return {
+    id: planet.planet_id,
+    name: planet.name,
+    image: planet.image,
+  };
+}
+
 /**
  * Find a user with the given id.
  *
@@ -23,9 +31,14 @@ const findById = async (id) => {
     .join('planets as p', 'up.planet_id', 'p.id')
     .where('up.user_id', id)
     .orderBy('p.name', 'asc');
+
+  let plantes = discoveredPlanets.map((planet) => {
+    return formatPlanet(planet);
+  });
+
   user = {
     ...user,
-    discoveredPlanets: discoveredPlanets,
+    discoveredPlanets: plantes,
   }
   return user;
 };

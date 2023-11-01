@@ -14,7 +14,7 @@ module.exports = {
             //     .notNullable();
             // table.float('time_to_discover')
             //     .notNullable();
-            table.boolean('discoverd')
+            table.boolean('discovered')
                 .notNullable()
                 .defaultTo(true);
             table.integer('image')

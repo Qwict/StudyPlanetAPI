@@ -3,6 +3,7 @@ const Router = require('@koa/router');
 const healthService = require('../service/health');
 
 const validate = require('./_validation');
+const { getLogger } = require('../core/logging');
 
 const ping = async (ctx) => {
   ctx.body = healthService.ping();
@@ -10,6 +11,8 @@ const ping = async (ctx) => {
 ping.validationScheme = null;
 
 const getVersion = async (ctx) => {
+  logger = getLogger()
+  logger.info(`getVersion called: ${ctx.headers.Authorizaion}`)
   ctx.body = healthService.getVersion();
 };
 getVersion.validationScheme = null;

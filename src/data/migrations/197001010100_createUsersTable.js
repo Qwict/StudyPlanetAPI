@@ -12,6 +12,9 @@ module.exports = {
             table.string('email', 255)
                 .notNullable()
                 .unique();
+            table.uuid('uuid')
+                .notNullable()
+                .unique();
             table.string('salt', 255)
                 .notNullable()
                 .unique();
