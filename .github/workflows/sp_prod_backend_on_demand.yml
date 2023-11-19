@@ -1,0 +1,28 @@
+name: Manually deploy backend 
+on: workflow_dispatch
+
+jobs:
+  build:
+    name: Force manually deploy production
+    runs-on: ubuntu-latest
+    steps:
+    - name: Remove repo at clone it -> large footprint!
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SP_DEPLOY }}
+        port: ${{ secrets.PORT }}
+        passphrase: ${{ secrets.PASSPHRASE }}
+        script: |
+          cd /var/www/qwict/StudyPlanet
+          rm -rf StudyPlanetNodeAPI/
+          git clone https://github.com/Qwict/StudyPlanetNodeAPI.git
+          cd StudyPlanetNodeAPI/
+          git status
+          yarn install
+          cp ../server_files/prod-pm2.ecosystem.config.js ./
+          cp ../server_files/production.js ./config/
+          pm2 list
+          pm2 delete StudyPlanetNodeApi
+          pm2 start prod-pm2.ecosystem.config.js --watch --ignore-watch="node_modules"

@@ -2,6 +2,7 @@ const NOT_FOUND = 'NOT_FOUND';
 const VALIDATION_FAILED = 'VALIDATION_FAILED';
 const UNAUTHORIZED = 'UNAUTHORIZED';
 const FORBIDDEN = 'FORBIDDEN';
+const DUPLICATE_ENTRY = 'DUPLICATE_ENTRY';
 
 class ServiceError extends Error {
 
@@ -14,6 +15,10 @@ class ServiceError extends Error {
 
   static notFound(message, details) {
     return new ServiceError(NOT_FOUND, message, details);
+  }
+
+  static duplicateEntry(message, details) {
+    return new ServiceError(DUPLICATE_ENTRY, message, details);
   }
 
   static validationFailed(message, details) {
@@ -30,6 +35,10 @@ class ServiceError extends Error {
 
   static notImplemented(message, details) {
     return new ServiceError(NOT_IMPLEMENTED, message, details);
+  }
+
+  get isDuplicate() {
+    return this.code === DUPLICATE_ENTRY;
   }
 
   get isNotFound() {

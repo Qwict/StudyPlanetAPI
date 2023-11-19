@@ -17,9 +17,6 @@ module.exports = {
             table.boolean('discovered')
                 .notNullable()
                 .defaultTo(true);
-            table.integer('image')
-                .notNullable();
-
         });
     },
     down: (knex) => {

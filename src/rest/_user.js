@@ -2,26 +2,34 @@ const Joi = require('joi');
 const Router = require('@koa/router');
 
 const {
-  hasPermission,
+  authorization,
   permissions,
-  addUserInfo,
 } = require('../core/auth');
+const ServiceError = require('../core/serviceError');
+
 const userService = require('../service/user');
 
 const validate = require('./_validation');
 const {
   getLogger,
 } = require('../core/logging');
+const { log } = require('winston');
 
-const getUserById = async (ctx) => {
-  const user = await userService.getUserById(ctx.params.id);
-  ctx.body = user;
+const getUser = async (ctx) => {
+  // simulate slow network here
+  // await new Promise(resolve => setTimeout(resolve, 3000));
+  const response = await userService.getUserWithToken(ctx.headers.authorization);
+  logger = getLogger();
+  logger.debug(`User: ${response.user}`);
+  if (response.validated) {
+    ctx.body = response;
+    ctx.status = 200;
+  } else {
+    ctx.status = 401;
+  }
+
 }
-getUserById.validationScheme = {
-  params: {
-    id: Joi.number().required(),
-  },
-};
+getUser.validationScheme = null;
 
 const login = async (ctx) => {
   const response = await userService.login(ctx.request.body);
@@ -42,14 +50,20 @@ login.validationScheme = {
 const register = async (ctx) => {
   const response = await userService.register(ctx.request.body);
   ctx.body = response;
-  if (response.validated) {
-    ctx.status = 201;
-  } else {
-    ctx.status = 401;
+  try {
+    if (response.validated) {
+      ctx.status = 201;
+    } else {
+      ctx.status = 401;
+    }
+  } catch (error) {
+    ctx.status = 409;
   }
+
 };
 register.validationScheme = {
   body: {
+    userUuid: Joi.string(),
     name: Joi.string(),
     email: Joi.string(),
     password: Joi.string(),
@@ -63,12 +77,12 @@ register.validationScheme = {
  */
 module.exports = function installUsersRoutes(app) {
   const router = new Router({
-    prefix: '/users',
+    prefix: '/v1/users',
   });
 
   router.post('/register', validate(register.validationScheme), register);
   router.post('/login', validate(login.validationScheme), login);
-  router.get('/:id', validate(getUserById.validationScheme), getUserById);
+  router.get('/', validate(getUser.validationScheme), authorization(permissions.loggedIn), getUser);
 
   app
     .use(router.routes())

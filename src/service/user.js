@@ -24,18 +24,38 @@ const debugLog = (message, meta = {}) => {
 
 const getUserById = async (id) => {
   debugLog(`Getting user with id ${id}`);
-  let user = await userRepository.findById(id);
+  const user = await userRepository.findById(id);
   if (!user) {
     throw ServiceError.notFound(`There is no user with id ${id}`);
   }
   user = formatUser(user);
-  return user;
+  return verification = {
+    token: undefined,
+    validated: true,
+    user: user,
+  };
+};
+
+const getUserWithToken = async (token) => {
+  debugLog(`Getting user with token ${token}`);
+  let decodedUser = jwt.verify(token, process.env.JWT_SECRET);
+  let user = await userRepository.findById(decodedUser.id);
+  if (!user) {
+    throw ServiceError.notFound(`There is no user with token ${token}`);
+  }
+  user = formatUser(user);
+  return verification = {
+    token,
+    validated: true,
+    user: user,
+  };
 };
 
 const generateJavaWebToken = async (user) => {
   debugLog(`Generating JWT for ${user.email}`);
   const jwtPackage = {
     id: user.id,
+    uuid: user.uuid,
     name: user.name,
     email: user.email,
   };
@@ -76,6 +96,7 @@ const login = async ({
 };
 
 const register = async ({
+  userUuid,
   name,
   email,
   password,
@@ -85,6 +106,7 @@ const register = async ({
   const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha256').toString('base64');
 
   const newUser = {
+    userUuid,
     name,
     email,
     salt,
@@ -108,7 +130,7 @@ const register = async ({
     return verification;
   } catch (error) {
     if (error.message === 'DUPLICATE_ENTRY') {
-      throw ServiceError.duplicate('DUPLICATE ENTRY');
+      throw ServiceError.duplicateEntry(`User already exists`, { email });
     } else {
       throw ServiceError.validationFailed(error.message);
     }
@@ -155,4 +177,5 @@ module.exports = {
   register,
   login,
   getUserById,
+  getUserWithToken,
 };

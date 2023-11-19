@@ -12,7 +12,6 @@ formatPlanet = (planet) => {
   return {
     id: planet.planet_id,
     name: planet.name,
-    image: planet.image,
   };
 }
 
@@ -55,6 +54,7 @@ const addExperience = async (userId, experience) => {
 
 
 async function create({
+  userUuid,
   name,
   email,
   salt,
@@ -64,13 +64,11 @@ async function create({
   const existingUser = await findByMail(email);
   const logger = getLogger();
   if (existingUser !== undefined) {
-    logger.error('Error in create', {
-      error,
-    });
-    throw error;
+    throw Error('DUPLICATE_ENTRY');
   }
   try {
     const [id] = await getKnex()(tables.users).insert({
+      uuid: userUuid,
       name,
       email,
       salt,

@@ -24,7 +24,7 @@ getVersion.validationScheme = null;
  */
 module.exports = function installPlacesRoutes(app) {
   const router = new Router({
-    prefix: '/health',
+    prefix: '/v1/health',
   });
 
   router.get('/ping', validate(ping.validationScheme), ping);

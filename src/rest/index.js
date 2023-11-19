@@ -18,7 +18,7 @@ const {
 module.exports = (app) => {
     const logger = getLogger();
     const router = new Router({
-        prefix: '/v1',
+        prefix: '/api',
     });
     logger.info('Installing routes');
 

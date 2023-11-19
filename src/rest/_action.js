@@ -46,7 +46,7 @@ const stopExploring = async (ctx) => {
 
 module.exports = function installActionsRoutes(app) {
   const router = new Router({
-    prefix: '/actions',
+    prefix: '/v1/actions',
   });
 
   router.post('/discover', authorization(permissions.loggedIn), startDiscovering);

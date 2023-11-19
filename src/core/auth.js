@@ -15,9 +15,9 @@ const permissions = Object.freeze({
 function authorization(permission) {
 	const logger = getLogger();
 	return async (ctx, next) => {
-		// const logger = getLogger();
+		const logger = getLogger();
 		const token = ctx.headers.authorization;
-		// logger.debug(`hasPermission: ${JSON.stringify(user)}`);
+		logger.debug(`Token: ${token}`);
 		let user;
 		if (!token) {
 			throw ServiceError.unauthorized('No valid token');

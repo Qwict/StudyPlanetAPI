@@ -31,41 +31,40 @@ const stopDiscovering = async (userId) => {
   if (absoluteDifference > margin) {
     this.logger.error("Selected time was not respected");
     throw new ServiceError.validationFailed("Selected time was not respected");
-  } else {
-    const undiscoveredPlanets = await userPlanetRepository.findAllUndiscoverdPlanets(userId);
-    if (undiscoveredPlanets.length != 0) {
-      logger.info(`Undiscovered planets: ${undiscoveredPlanets.length}`);
-
-      let chanceOfSuccess = 0;
-      if (process.env.NODE_ENV === 'development') {
-        chanceOfSuccess = 1.0; // for development purposes
-      } else {
-        chanceOfSuccess = (selectedTime / 1000 / 60) / 30 / 5; // 30 minutes will give a 20 % chance of success
-      }
-
-      if (Math.random() > chanceOfSuccess) {
-        logger.info(`No planet was discovered with chance: ${chanceOfSuccess}`);
-        return;
-      }
-
-      // select random planet from undiscovered planets
-      const randomIndex = Math.floor(Math.random() * undiscoveredPlanets.length);
-      const randomPlanet = undiscoveredPlanets[randomIndex];
-
-      const planetId = randomPlanet.id
-      logger.info(`Random planet: ${randomPlanet.name} with id ${planetId}`);
-
-      // give planet to user
-      await userPlanetRepository.createUserPlanet(userId, planetId);
-      return randomPlanet;
-    } else {
-      // The user will just get experience instead of a planet
-      logger.info("No undiscovered planets");
-      userRepository.addExperience(userId, selectedTime / 1000);
-    }
   }
 
   handleAction(actionType = "stop-discover", userId, selectedTime)
+  const undiscoveredPlanets = await userPlanetRepository.findAllUndiscoverdPlanets(userId);
+  if (undiscoveredPlanets.length != 0) {
+    logger.info(`Undiscovered planets: ${undiscoveredPlanets.length}`);
+
+    let chanceOfSuccess = 0;
+    if (process.env.NODE_ENV === 'development') {
+      chanceOfSuccess = 1.0; // for development purposes
+    } else {
+      chanceOfSuccess = (selectedTime / 1000 / 60) / 30 / 5; // 30 minutes will give a 20 % chance of success
+    }
+
+    if (Math.random() > chanceOfSuccess) {
+      logger.info(`No planet was discovered with chance: ${chanceOfSuccess}`);
+      return;
+    }
+
+    // select random planet from undiscovered planets
+    const randomIndex = Math.floor(Math.random() * undiscoveredPlanets.length);
+    const randomPlanet = undiscoveredPlanets[randomIndex];
+
+    const planetId = randomPlanet.id
+    logger.info(`Random planet: ${randomPlanet.name} with id ${planetId}`);
+
+    // give planet to user
+    await userPlanetRepository.createUserPlanet(userId, planetId);
+    return randomPlanet;
+  } else {
+    // The user will just get experience instead of a planet
+    logger.info("No undiscovered planets");
+    userRepository.addExperience(userId, selectedTime / 1000);
+  }
 };
 
 const startExploring = async (userId, planetId) => {
@@ -75,8 +74,6 @@ const startExploring = async (userId, planetId) => {
 
 
 const stopExploring = async (userId, planetId) => {
-
-
   handleAction(actionType = "stop-explore", userId, selectedTime)
 };
 
