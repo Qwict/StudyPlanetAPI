@@ -1,6 +1,6 @@
 {
   "name": "study_planet_api",
-  "version": "0.1.0",
+  "version": "0.4.1",
   "main": "index.js",
   "repository": "https://github.com/qwict/studyplanetapi.git",
   "author": "Joris Van Duyse <64415571+jorisvanduyse@users.noreply.github.com>",
@@ -35,7 +35,7 @@
     "nodemon": "^2.0.19"
   },
   "scripts": {
-    "start": "npx env-cmd nodemon",
+    "start": "npx env-cmd nodemon src/index.js",
     "start:prod": "node src/index.js",
     "test": "npx env-cmd -f .env.test jest",
     "test:coverage": "npx env-cmd -f .env.test jest --coverage",

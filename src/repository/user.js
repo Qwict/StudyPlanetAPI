@@ -54,7 +54,6 @@ const addExperience = async (userId, experience) => {
 
 
 async function create({
-  userUuid,
   name,
   email,
   salt,
@@ -68,7 +67,6 @@ async function create({
   }
   try {
     const [id] = await getKnex()(tables.users).insert({
-      uuid: userUuid,
       name,
       email,
       salt,

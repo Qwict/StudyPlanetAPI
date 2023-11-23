@@ -11,7 +11,6 @@ formatUser = (user) => {
     id: user.id,
     name: user.name,
     email: user.email,
-    userUuid: user.uuid,
     experience: user.experience,
     discoveredPlanets: user.discoveredPlanets,
   };
@@ -96,7 +95,6 @@ const login = async ({
 };
 
 const register = async ({
-  userUuid,
   name,
   email,
   password,
@@ -106,7 +104,6 @@ const register = async ({
   const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha256').toString('base64');
 
   const newUser = {
-    userUuid,
     name,
     email,
     salt,

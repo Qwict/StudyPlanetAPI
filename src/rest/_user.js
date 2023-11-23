@@ -33,6 +33,7 @@ getUser.validationScheme = null;
 
 const login = async (ctx) => {
   const response = await userService.login(ctx.request.body);
+  await new Promise(resolve => setTimeout(resolve, 1000));
   ctx.body = response;
   if (response.validated) {
     ctx.status = 201;
@@ -63,7 +64,6 @@ const register = async (ctx) => {
 };
 register.validationScheme = {
   body: {
-    userUuid: Joi.string(),
     name: Joi.string(),
     email: Joi.string(),
     password: Joi.string(),
