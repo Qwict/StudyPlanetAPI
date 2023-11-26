@@ -26,9 +26,9 @@ const stopDiscovering = async (ctx) => {
   const logger = getLogger();
   logger.info("STOP DISCOVER FORM:", ctx.request.headers)
   let userId = ctx.state.user.id
-  const discoveredPlanet = await actionService.stopDiscovering(userId);
+  let discoveredPlanet = await actionService.stopDiscovering(userId);
+  logger.info("Discovered planet:" + discoveredPlanet.name)
   ctx.body = discoveredPlanet;
-  ctx.status = 204;
 }
 
 const startExploring = async (ctx) => {
@@ -41,7 +41,6 @@ const startExploring = async (ctx) => {
 const stopExploring = async (ctx) => {
   const logger = getLogger();
   logger.info("STOP MINE FORM:", ctx.request.headers)
-  ctx.status = 204;
 }
 
 module.exports = function installActionsRoutes(app) {
@@ -59,6 +58,3 @@ module.exports = function installActionsRoutes(app) {
     .use(router.routes())
     .use(router.allowedMethods());;
 }
-
-
-

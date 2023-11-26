@@ -33,7 +33,6 @@ getUser.validationScheme = null;
 
 const login = async (ctx) => {
   const response = await userService.login(ctx.request.body);
-  await new Promise(resolve => setTimeout(resolve, 1000));
   ctx.body = response;
   if (response.validated) {
     ctx.status = 201;
