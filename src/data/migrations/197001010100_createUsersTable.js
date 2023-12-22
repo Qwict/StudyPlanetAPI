@@ -20,8 +20,6 @@ module.exports = {
                 .unique();
             table.integer('experience')
                 .defaultTo(0);
-            table.uuid('validation_id')
-                .nullable();
             table.bigint('selected_time')
                 .nullable();
             table.timestamp('start_time')

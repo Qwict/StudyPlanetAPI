@@ -54,7 +54,6 @@ const generateJavaWebToken = async (user) => {
   debugLog(`Generating JWT for ${user.email}`);
   const jwtPackage = {
     id: user.id,
-    uuid: user.uuid,
     name: user.name,
     email: user.email,
   };
