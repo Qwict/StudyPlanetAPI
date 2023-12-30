@@ -44,7 +44,9 @@ const findById = async (id) => {
 
 const addExperience = async (userId, experience) => {
   const user = await findById(userId);
+  const logger = getLogger();
   const newExperience = user.experience + experience;
+  logger.info(`Adding experience ${experience} to user ${userId} from ${user.experience} to ${newExperience}`);
   await getKnex()(tables.users)
     .where('id', userId)
     .update({

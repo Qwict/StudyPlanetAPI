@@ -10,10 +10,7 @@ const ServiceError = require('../core/serviceError');
 const userService = require('../service/user');
 
 const validate = require('./_validation');
-const {
-  getLogger,
-} = require('../core/logging');
-const { log } = require('winston');
+const { getLogger } = require('../core/logging');
 
 const getUser = async (ctx) => {
   // simulate slow network here

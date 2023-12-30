@@ -15,7 +15,7 @@ const actionService = require('../service/action');
 
 const startDiscovering = async (ctx) => {
   const logger = getLogger();
-  logger.info("User in route:", ctx.state.user)
+  logger.info("START DISCOVER", ctx.state.user.email)
   let userId = ctx.state.user.id
   let selectedTime = ctx.request.body.selectedTime
   await actionService.startDiscovering(userId, selectedTime);
@@ -24,23 +24,30 @@ const startDiscovering = async (ctx) => {
 
 const stopDiscovering = async (ctx) => {
   const logger = getLogger();
-  logger.info("STOP DISCOVER FORM:", ctx.request.headers)
+  logger.info("STOP DISCOVER:", ctx.state.user.email)
   let userId = ctx.state.user.id
   let discoveredPlanet = await actionService.stopDiscovering(userId);
-  logger.info("Discovered planet:" + discoveredPlanet.name)
   ctx.body = discoveredPlanet;
 }
 
 const startExploring = async (ctx) => {
   const logger = getLogger();
-  logger.info("MINE FORM:", ctx.request.headers)
+  logger.info("START EXPLORE:", ctx.state.user.email)
+  let userId = ctx.state.user.id
+  let selectedTime = ctx.request.body.selectedTime
+  let planetId = ctx.request.body.planetId
+  await actionService.startExploring(userId, planetId, selectedTime);
   ctx.status = 204;
 }
 
 
 const stopExploring = async (ctx) => {
   const logger = getLogger();
-  logger.info("STOP MINE FORM:", ctx.request.headers)
+  logger.info("STOP MINE FORM:", ctx.state.user.email)
+  let userId = ctx.state.user.id
+  let response = await actionService.stopExploring(userId);
+  ctx.body = response;
+  ctx.status = 201;
 }
 
 module.exports = function installActionsRoutes(app) {

@@ -5,6 +5,7 @@ const ServiceError = require('../core/serviceError');
 const actionRepository = require('../repository/action');
 const userPlanetRepository = require('../repository/usersPlanets');
 const userRepository = require('../repository/user');
+const { debug } = require('winston');
 
 
 const debugLog = (message, meta = {}) => {
@@ -18,20 +19,15 @@ const startDiscovering = async (userId, selectedTime) => {
 };
 
 const stopDiscovering = async (userId) => {
+  const emptyPlanet = { id: 0, name: "" }
+  let hasFoundNewPlanet = false;
+  let randomPlanet = emptyPlanet;
+
   const logger = getLogger();
+
   const action = await actionRepository.getActionByUserId(userId);
-
-  // check if selected time was respected
-  const actualTimePassed = action.end_time - action.start_time;
   const selectedTime = action.selected_time;
-
-  const margin = 1000 * 60 * 2; // 2 minutes
-
-  const absoluteDifference = Math.abs(actualTimePassed - selectedTime);
-  if (absoluteDifference > margin) {
-    this.logger.error("Selected time was not respected");
-    throw new ServiceError.validationFailed("Selected time was not respected");
-  }
+  await validateActionByUserId(action);
 
   handleAction(actionType = "stop-discover", userId, selectedTime)
   const undiscoveredPlanets = await userPlanetRepository.findAllUndiscoverdPlanets(userId);
@@ -47,37 +43,56 @@ const stopDiscovering = async (userId) => {
 
     if (Math.random() > chanceOfSuccess) {
       logger.info(`No planet was discovered with chance: ${chanceOfSuccess}`);
-      return;
+    } else {
+      // select random planet from undiscovered planets
+      const randomIndex = Math.floor(Math.random() * undiscoveredPlanets.length);
+      randomPlanet = undiscoveredPlanets[randomIndex];
+
+      const planetId = randomPlanet.id
+      logger.info(`Random planet: ${randomPlanet.name} with id ${planetId}`);
+
+      // give planet to user
+      await userPlanetRepository.createUserPlanet(userId, planetId);
+      hasFoundNewPlanet = true
     }
 
-    // select random planet from undiscovered planets
-    const randomIndex = Math.floor(Math.random() * undiscoveredPlanets.length);
-    const randomPlanet = undiscoveredPlanets[randomIndex];
+  }
 
-    const planetId = randomPlanet.id
-    logger.info(`Random planet: ${randomPlanet.name} with id ${planetId}`);
+  let experience = action.selected_time / 1000 / 60;
+  // add experience to user
+  await userRepository.addExperience(userId, experience);
 
-    // give planet to user
-    await userPlanetRepository.createUserPlanet(userId, planetId);
-    return randomPlanet;
-  } else {
-    // The user will just get experience instead of a planet
-    logger.info("No undiscovered planets");
-    userRepository.addExperience(userId, selectedTime / 1000);
+  return {
+    hasFoundNewPlanet: hasFoundNewPlanet,
+    planet: randomPlanet,
+  }
+
+
+};
+
+const startExploring = async (userId, planetId, selectedTime) => {
+  await validateUserHasPlanetRelation(userId, planetId)
+  await handleAction(actionType = "start-explore", userId, selectedTime)
+  // TODO check if selected time is appropriate for exploration
+};
+
+
+const stopExploring = async (userId) => {
+  let action = await actionRepository.getActionByUserId(userId);
+
+  await validateActionByUserId(action);
+  let experience = action.selected_time / 1000 / 60;
+  await userRepository.addExperience(userId, experience);
+
+  const selectedTime = action.selected_time;
+  await handleAction(actionType = "stop-explore", userId, selectedTime)
+  return {
+    experience: experience
   }
 };
 
-const startExploring = async (userId, planetId) => {
-  // TODO check if selected time is appropriate for exploration
-  handleAction(actionType = "start-explore", userId, selectedTime)
-};
-
-
-const stopExploring = async (userId, planetId) => {
-  handleAction(actionType = "stop-explore", userId, selectedTime)
-};
-
 async function handleAction(actionType, userId, selectedTime) {
+  debugLog("HANDLE ACTION: with selected time: " + selectedTime / 1000 / 60 + "minutes, " + selectedTime / 1000 / 60 + " xp")
   let discovering = false;
   let exploring = false;
   switch (actionType) {
@@ -106,7 +121,31 @@ async function handleAction(actionType, userId, selectedTime) {
     discovering: discovering,
     exploring: exploring,
   }
+  debugLog("NEW ACTION FOR USER: " + userId + " " + JSON.stringify(newAction))
+
   await actionRepository.createActionByUserId(userId, newAction);
+}
+
+const validateActionByUserId = async (action) => {
+  // check if selected time was respected
+  const actualTimePassed = action.end_time - action.start_time;
+  const selectedTime = action.selected_time;
+
+  const margin = 1000 * 60 * 2; // 2 minutes
+
+  const absoluteDifference = Math.abs(actualTimePassed - selectedTime);
+  if (absoluteDifference > margin) {
+    this.logger.error("Selected time was not respected");
+    throw ServiceError.validationFailed("Selected time was not respected");
+  }
+}
+
+const validateUserHasPlanetRelation = async (userId, planetId) => {
+  planets = await userPlanetRepository.findAllUserPlanets(userId);
+  let userHasPlanet = planets.filter(planet => planet.id == planetId).length > 0;
+  if (!userHasPlanet) {
+    throw ServiceError.validationFailed("User does not own this planet");
+  }
 }
 
 module.exports = {

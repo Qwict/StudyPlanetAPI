@@ -29,7 +29,7 @@ const createActionByUserId = async (userId, newAction) => {
       .update(newAction);
   } catch (error) {
     const logger = getLogger();
-    logger.error('User does not yet own an action');
+    logger.debug('Creating new action for new user');
     await getKnex()(tables.actions)
       .insert({
         user_id: userId,

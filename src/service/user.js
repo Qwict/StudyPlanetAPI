@@ -76,10 +76,10 @@ const login = async ({
     user: undefined,
   };
   let userWithoutPlanets = await userRepository.findByMail(email);
-  let user = await userRepository.findById(userWithoutPlanets.id);
-  if (!user) {
-    throw ServiceError.notFound(`There is no user with email ${email}`);
+  if (!userWithoutPlanets) {
+    throw ServiceError.forbidden(`There is no user with email ${email}`);
   }
+  let user = await userRepository.findById(userWithoutPlanets.id);
   const result = user.hash === crypto.pbkdf2Sync(password, user.salt, 10000, 64, 'sha256').toString('base64');
   if (result) {
     const token = await generateJavaWebToken(user);
@@ -131,41 +131,6 @@ const register = async ({
       throw ServiceError.validationFailed(error.message);
     }
   }
-};
-
-const startExploring = async (planetId, ctx) => {
-  const logger = getLogger();
-
-  // get user from database
-
-  // const user = await userRepository.findById(ctx.state.user.auth0id);
-  logger.info(`USER:`);
-
-  // check if user is not currently exploring or discovering
-
-  // check if user has relation with planet
-
-  logger.info(`START EXPLORING`);
-};
-
-const stopExploring = async () => {
-  const logger = getLogger();
-  logger.info(`STOP EXPLORING`);
-};
-
-const startDiscovering = async () => {
-  const logger = getLogger();
-  logger.info(`START DISCOVERING`);
-};
-
-const stopDiscovering = async () => {
-  const logger = getLogger();
-  logger.info(`STOP DISCOVERING`);
-  // get array of planets that are not discovered yet by the user
-
-  // depending on selected time create percentage chance of discovering a planet
-
-  // if planet is discovered create relation between user and planet
 };
 
 

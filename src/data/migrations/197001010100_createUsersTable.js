@@ -20,16 +20,6 @@ module.exports = {
                 .unique();
             table.integer('experience')
                 .defaultTo(0);
-            table.bigint('selected_time')
-                .nullable();
-            table.timestamp('start_time')
-                .nullable();
-            table.timestamp('end_time')
-                .nullable();
-            table.boolean('discovering')
-                .defaultTo(false);
-            table.boolean('exploring')
-                .defaultTo(false);
         });
     },
     down: (knex) => {
