@@ -14,8 +14,11 @@ const debugLog = (message, meta = {}) => {
 };
 
 const startDiscovering = async (userId, selectedTime) => {
+  const logger = getLogger();
+  logger.info(`Discover chance:  ${(selectedTime / 1000 / 60) / 30 / 2}`)
   // TODO check if selected time is appropriate for discovery
   handleAction(actionType = "start-discover", userId, selectedTime)
+
 };
 
 const stopDiscovering = async (userId) => {
@@ -31,6 +34,15 @@ const stopDiscovering = async (userId) => {
 
   handleAction(actionType = "stop-discover", userId, selectedTime)
   const undiscoveredPlanets = await userPlanetRepository.findAllUndiscoverdPlanets(userId);
+  logger.info(`User with id: ${userId} has ${undiscoveredPlanets.length} undiscovered planets`)
+  if (!action.discovering) {
+    logger.warn("User was not discovering and requested to stop discovery");
+    return {
+      hasFoundNewPlanet: hasFoundNewPlanet,
+      planet: randomPlanet,
+    }
+  }
+
   if (undiscoveredPlanets.length != 0) {
     logger.info(`Undiscovered planets: ${undiscoveredPlanets.length}`);
 
@@ -38,7 +50,7 @@ const stopDiscovering = async (userId) => {
     if (process.env.NODE_ENV === 'development') {
       chanceOfSuccess = 1.0; // for development purposes
     } else {
-      chanceOfSuccess = (selectedTime / 1000 / 60) / 30 / 5; // 30 minutes will give a 20 % chance of success
+      chanceOfSuccess = (selectedTime / 1000 / 60) / 30 / 2; // 30 minutes will give a 50 % chance of success
     }
 
     if (Math.random() > chanceOfSuccess) {
@@ -55,7 +67,6 @@ const stopDiscovering = async (userId) => {
       await userPlanetRepository.createUserPlanet(userId, planetId);
       hasFoundNewPlanet = true
     }
-
   }
 
   let experience = action.selected_time / 1000 / 60;
