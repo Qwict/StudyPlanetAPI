@@ -11,16 +11,16 @@ module.exports = {
             name: 'Europa',
         }, {
             id: 4,
-            name: 'Titan',
+            name: 'Jupiter',
         }, {
             id: 5,
-            name: 'Venus',
+            name: 'Neptune',
         }, {
             id: 6,
             name: 'Mercury',
         }, {
             id: 7,
-            name: 'Pluto',
+            name: 'Saturn',
         }]);
     },
 };

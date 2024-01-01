@@ -17,7 +17,6 @@ function authorization(permission) {
 	return async (ctx, next) => {
 		const logger = getLogger();
 		const token = ctx.headers.authorization;
-		logger.debug(`Token: ${token}`);
 		let user;
 		if (!token) {
 			throw ServiceError.unauthorized('No valid token');
