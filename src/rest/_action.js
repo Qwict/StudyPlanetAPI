@@ -21,6 +21,17 @@ const startDiscovering = async (ctx) => {
   await actionService.startDiscovering(userId, selectedTime);
   ctx.status = 204;
 }
+startDiscovering.validationScheme = {
+  body: {
+    selectedTime: Joi
+      .number()
+      .integer()
+      .max(5 * 60 * 60 * 1000) // 5 hours
+      .min(
+        process.env.NODE_ENV === 'production' ? 30 * 60 * 1000 : 0 // 15 minutes (if in production mode)
+      ),
+  },
+};
 
 const stopDiscovering = async (ctx) => {
   const logger = getLogger();
@@ -29,6 +40,18 @@ const stopDiscovering = async (ctx) => {
   let discoveredPlanet = await actionService.stopDiscovering(userId);
   ctx.body = discoveredPlanet;
 }
+stopDiscovering.validationScheme = {
+  body: {
+    selectedTime: Joi
+      .number()
+      .integer()
+      .max(5 * 60 * 60 * 1000) // 5 hours
+      .min(
+        process.env.NODE_ENV === 'production' ? 30 * 60 * 1000 : 0 // 15 minutes (if in production mode)
+      ),
+  },
+};
+
 
 const startExploring = async (ctx) => {
   const logger = getLogger();
@@ -39,6 +62,18 @@ const startExploring = async (ctx) => {
   await actionService.startExploring(userId, planetId, selectedTime);
   ctx.status = 204;
 }
+startExploring.validationScheme = {
+  body: {
+    planetId: Joi.number().integer(),
+    selectedTime: Joi
+      .number()
+      .integer()
+      .max(5 * 60 * 60 * 1000) // 5 hours
+      .min(
+        process.env.NODE_ENV === 'production' ? 30 * 60 * 1000 : 0 // 15 minutes (if in production mode)
+      ),
+  },
+};
 
 
 const stopExploring = async (ctx) => {
@@ -49,17 +84,28 @@ const stopExploring = async (ctx) => {
   ctx.body = response;
   ctx.status = 201;
 }
+stopDiscovering.validationScheme = {
+  body: {
+    selectedTime: Joi
+      .number()
+      .integer()
+      .max(5 * 60 * 60 * 1000) // 5 hours
+      .min(
+        process.env.NODE_ENV === 'production' ? 30 * 60 * 1000 : 0 // 15 minutes (if in production mode)
+      ),
+  },
+};
 
 module.exports = function installActionsRoutes(app) {
   const router = new Router({
     prefix: '/v1/actions',
   });
 
-  router.post('/discover', authorization(permissions.loggedIn), startDiscovering);
-  router.post('/explore', authorization(permissions.loggedIn), startExploring);
+  router.post('/discover', validate(startDiscovering.validationScheme), authorization(permissions.loggedIn), startDiscovering);
+  router.post('/explore', validate(startExploring.validationScheme), authorization(permissions.loggedIn), startExploring);
 
-  router.put('/discover', authorization(permissions.loggedIn), stopDiscovering);
-  router.put('/explore', authorization(permissions.loggedIn), stopExploring);
+  router.put('/discover', validate(stopDiscovering.validationScheme), authorization(permissions.loggedIn), stopDiscovering);
+  router.put('/explore', validate(stopExploring.validationScheme), authorization(permissions.loggedIn), stopExploring);
 
   app
     .use(router.routes())
