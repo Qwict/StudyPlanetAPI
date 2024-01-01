@@ -13,7 +13,7 @@ ping.validationScheme = null;
 const getVersion = async (ctx) => {
   logger = getLogger()
   logger.info(`getVersion called: ${ctx.headers.Authorizaion}`)
-  ctx.body = healthService.getVersion();
+  ctx.body = await healthService.getVersion();
 };
 getVersion.validationScheme = null;
 
