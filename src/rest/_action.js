@@ -28,7 +28,7 @@ startDiscovering.validationScheme = {
       .integer()
       .max(5 * 60 * 60 * 1000) // 5 hours
       .min(
-        process.env.NODE_ENV === 'production' ? 30 * 60 * 1000 : 0 // 15 minutes (if in production mode)
+        process.env.NODE_ENV === 'production' ? 15 * 60 * 1000 : 0 // 15 minutes (if in production mode)
       ),
   },
 };
@@ -47,7 +47,7 @@ stopDiscovering.validationScheme = {
       .integer()
       .max(5 * 60 * 60 * 1000) // 5 hours
       .min(
-        process.env.NODE_ENV === 'production' ? 30 * 60 * 1000 : 0 // 15 minutes (if in production mode)
+        process.env.NODE_ENV === 'production' ? 15 * 60 * 1000 : 0 // 15 minutes (if in production mode)
       ),
   },
 };
@@ -70,7 +70,7 @@ startExploring.validationScheme = {
       .integer()
       .max(5 * 60 * 60 * 1000) // 5 hours
       .min(
-        process.env.NODE_ENV === 'production' ? 30 * 60 * 1000 : 0 // 15 minutes (if in production mode)
+        process.env.NODE_ENV === 'production' ? 15 * 60 * 1000 : 0 // 15 minutes (if in production mode)
       ),
   },
 };
@@ -91,7 +91,7 @@ stopDiscovering.validationScheme = {
       .integer()
       .max(5 * 60 * 60 * 1000) // 5 hours
       .min(
-        process.env.NODE_ENV === 'production' ? 30 * 60 * 1000 : 0 // 15 minutes (if in production mode)
+        process.env.NODE_ENV === 'production' ? 15 * 60 * 1000 : 0 // 15 minutes (if in production mode)
       ),
   },
 };
