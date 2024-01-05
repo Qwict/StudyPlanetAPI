@@ -1,10 +1,10 @@
 {
   "name": "study_planet_api",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "main": "index.js",
-  "repository": "https://github.com/qwict/studyplanetapi.git",
+  "repository": "https://github.com/Qwict/StudyPlanetNodeAPI",
   "author": "Joris Van Duyse <64415571+jorisvanduyse@users.noreply.github.com>",
-  "license": "MIT-license",
+  "license": "LGPL-3.0-only",
   "dependencies": {
     "@koa/cors": "^4.0.0",
     "@koa/router": "^12.0.0",

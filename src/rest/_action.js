@@ -40,17 +40,17 @@ const stopDiscovering = async (ctx) => {
   let discoveredPlanet = await actionService.stopDiscovering(userId);
   ctx.body = discoveredPlanet;
 }
-stopDiscovering.validationScheme = {
-  body: {
-    selectedTime: Joi
-      .number()
-      .integer()
-      .max(5 * 60 * 60 * 1000) // 5 hours
-      .min(
-        process.env.NODE_ENV === 'production' ? 15 * 60 * 1000 : 0 // 15 minutes (if in production mode)
-      ),
-  },
-};
+// stopDiscovering.validationScheme = {
+//   body: {
+//     selectedTime: Joi
+//       .number()
+//       .integer()
+//       .max(5 * 60 * 60 * 1000) // 5 hours
+//       .min(
+//         process.env.NODE_ENV === 'production' ? 15 * 60 * 1000 : 0 // 15 minutes (if in production mode)
+//       ),
+//   },
+// };
 
 
 const startExploring = async (ctx) => {
@@ -84,17 +84,17 @@ const stopExploring = async (ctx) => {
   ctx.body = response;
   ctx.status = 201;
 }
-stopDiscovering.validationScheme = {
-  body: {
-    selectedTime: Joi
-      .number()
-      .integer()
-      .max(5 * 60 * 60 * 1000) // 5 hours
-      .min(
-        process.env.NODE_ENV === 'production' ? 15 * 60 * 1000 : 0 // 15 minutes (if in production mode)
-      ),
-  },
-};
+// stopDiscovering.validationScheme = {
+//   body: {
+//     selectedTime: Joi
+//       .number()
+//       .integer()
+//       .max(5 * 60 * 60 * 1000) // 5 hours
+//       .min(
+//         process.env.NODE_ENV === 'production' ? 15 * 60 * 1000 : 0 // 15 minutes (if in production mode)
+//       ),
+//   },
+// };
 
 module.exports = function installActionsRoutes(app) {
   const router = new Router({
@@ -104,8 +104,18 @@ module.exports = function installActionsRoutes(app) {
   router.post('/discover', validate(startDiscovering.validationScheme), authorization(permissions.loggedIn), startDiscovering);
   router.post('/explore', validate(startExploring.validationScheme), authorization(permissions.loggedIn), startExploring);
 
-  router.put('/discover', validate(stopDiscovering.validationScheme), authorization(permissions.loggedIn), stopDiscovering);
-  router.put('/explore', validate(stopExploring.validationScheme), authorization(permissions.loggedIn), stopExploring);
+  router.put(
+    '/discover',
+    // validate(stopDiscovering.validationScheme),
+    authorization(permissions.loggedIn),
+    stopDiscovering
+  );
+  router.put(
+    '/explore',
+    // validate(stopExploring.validationScheme),
+    authorization(permissions.loggedIn),
+    stopExploring
+  );
 
   app
     .use(router.routes())
