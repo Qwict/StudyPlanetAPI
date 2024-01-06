@@ -75,6 +75,7 @@ const stopDiscovering = async (userId) => {
 
   return {
     hasFoundNewPlanet: hasFoundNewPlanet,
+    experience: experience,
     planet: randomPlanet,
   }
 

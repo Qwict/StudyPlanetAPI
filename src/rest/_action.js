@@ -15,7 +15,7 @@ const actionService = require('../service/action');
 
 const startDiscovering = async (ctx) => {
   const logger = getLogger();
-  logger.info("START DISCOVER", ctx.state.user.email)
+  logger.info("START DISCOVER", ctx.state.user.name)
   let userId = ctx.state.user.id
   let selectedTime = ctx.request.body.selectedTime
   await actionService.startDiscovering(userId, selectedTime);
@@ -55,7 +55,7 @@ const stopDiscovering = async (ctx) => {
 
 const startExploring = async (ctx) => {
   const logger = getLogger();
-  logger.info("START EXPLORE:", ctx.state.user.email)
+  logger.info(`START EXPLORE: ${ctx.state.user.name}, ${ctx.request.body.planetId}`)
   let userId = ctx.state.user.id
   let selectedTime = ctx.request.body.selectedTime
   let planetId = ctx.request.body.planetId
@@ -78,7 +78,7 @@ startExploring.validationScheme = {
 
 const stopExploring = async (ctx) => {
   const logger = getLogger();
-  logger.info("STOP MINE FORM:", ctx.state.user.email)
+  logger.info("STOP MINE FORM:", ctx.state.user.name)
   let userId = ctx.state.user.id
   let response = await actionService.stopExploring(userId);
   ctx.body = response;
