@@ -5,8 +5,6 @@ const ServiceError = require('../core/serviceError');
 const actionRepository = require('../repository/action');
 const userPlanetRepository = require('../repository/usersPlanets');
 const userRepository = require('../repository/user');
-const { debug } = require('winston');
-
 
 const debugLog = (message, meta = {}) => {
   if (!this.logger) this.logger = getLogger();
@@ -15,10 +13,8 @@ const debugLog = (message, meta = {}) => {
 
 const startDiscovering = async (userId, selectedTime) => {
   const logger = getLogger();
-  logger.info(`Discover chance:  ${(selectedTime / 1000 / 60) / 30 / 2}`)
-  // TODO check if selected time is appropriate for discovery
+  logger.info(`Discover chance:  ${(Math.round((selectedTime / 1000 / 60) / 30 / 2) / 100).toFixed(2)}%`)
   handleAction(actionType = "start-discover", userId, selectedTime)
-
 };
 
 const stopDiscovering = async (userId) => {
@@ -30,7 +26,7 @@ const stopDiscovering = async (userId) => {
 
   const action = await actionRepository.getActionByUserId(userId);
   const selectedTime = action.selected_time;
-  await validateActionByUserId(action);
+  validateActionByUserId(action);
 
   handleAction(actionType = "stop-discover", userId, selectedTime)
   const undiscoveredPlanets = await userPlanetRepository.findAllUndiscoverdPlanets(userId);
@@ -61,7 +57,7 @@ const stopDiscovering = async (userId) => {
       randomPlanet = undiscoveredPlanets[randomIndex];
 
       const planetId = randomPlanet.id
-      logger.info(`Random planet: ${randomPlanet.name} with id ${planetId}`);
+      logger.debug(`Random planet: ${randomPlanet.name} with id ${planetId}`);
 
       // give planet to user
       await userPlanetRepository.createUserPlanet(userId, planetId);
@@ -92,7 +88,7 @@ const startExploring = async (userId, planetId, selectedTime) => {
 const stopExploring = async (userId) => {
   let action = await actionRepository.getActionByUserId(userId);
 
-  await validateActionByUserId(action);
+  validateActionByUserId(action);
   let experience = action.selected_time / 1000 / 60;
   await userRepository.addExperience(userId, experience);
 
@@ -138,17 +134,21 @@ async function handleAction(actionType, userId, selectedTime) {
   await actionRepository.createActionByUserId(userId, newAction);
 }
 
-const validateActionByUserId = async (action) => {
+function validateActionByUserId(action) {
+  const logger = getLogger()
   // check if selected time was respected
-  const actualTimePassed = action.end_time - action.start_time;
+  const actualTimePassed = Date.now() - action.start_time;
+  logger.debug(`Validating action: ActualTimePassed = ${actualTimePassed / 1000} seconds`)
+
   const selectedTime = action.selected_time;
 
   const margin = 1000 * 60 * 2; // 2 minutes
 
   const absoluteDifference = Math.abs(actualTimePassed - selectedTime);
+  logger.debug(`Validating action: AbsoluteDifference = ${absoluteDifference / 1000} seconds`)
   if (absoluteDifference > margin) {
-    this.logger.error("Selected time was not respected");
-    throw ServiceError.validationFailed("Selected time was not respected");
+    logger.warn(`Selected time was not respected: AbsoluteDifference = ${absoluteDifference / 1000} seconds`);
+    throw ServiceError.validationFailed(`Selected time was not respected: AbsoluteDifference = ${absoluteDifference / 1000} seconds`);
   }
 }
 

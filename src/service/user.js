@@ -36,11 +36,11 @@ const getUserById = async (id) => {
 };
 
 const getUserWithToken = async (token) => {
-  debugLog(`Getting user with token ${token}`);
+  debugLog(`Getting user with token`);
   let decodedUser = jwt.verify(token, process.env.JWT_SECRET);
   let user = await userRepository.findById(decodedUser.id);
   if (!user) {
-    throw ServiceError.notFound(`There is no user with token ${token}`);
+    throw ServiceError.notFound(`There is no user with token given token`);
   }
   user = formatUser(user);
   return verification = {
@@ -98,7 +98,8 @@ const register = async ({
   email,
   password,
 }) => {
-  debugLog(`Creating user with name ${name} and email ${email}`);
+  logger = getLogger();
+  logger.info(`Creating new user with name ${name}`);
   const salt = crypto.randomBytes(128).toString('base64');
   const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha256').toString('base64');
 
@@ -112,7 +113,7 @@ const register = async ({
   try {
     const user = await userRepository.create(newUser);
 
-    debugLog(`Created user with name ${name} and email ${email}`);
+    debugLog(`Created user with name ${name}`);
 
     const token = await generateJavaWebToken(user);
 

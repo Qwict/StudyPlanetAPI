@@ -3,9 +3,7 @@ const ServiceError = require('./serviceError');
 
 
 // disabled for linting
-const {
-	getLogger,
-} = require('./logging');
+const { getLogger } = require('./logging');
 
 const permissions = Object.freeze({
 	loggedIn: 'loggedIn',
@@ -15,7 +13,7 @@ const permissions = Object.freeze({
 function authorization(permission) {
 	const logger = getLogger();
 	return async (ctx, next) => {
-		const logger = getLogger();
+		// const logger = getLogger();
 		const token = ctx.headers.authorization;
 		let user;
 		if (!token) {

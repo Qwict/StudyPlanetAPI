@@ -37,7 +37,7 @@ const createUserPlanet = async (
   planetId,
 ) => {
   const logger = getLogger();
-  logger.info(`Creating user planet relation for user ${userId} and planet ${planetId}`)
+  logger.info(`User(id:${userId}) discovered planet(id: ${planetId})`)
   try {
     const [id] = await getKnex()(tables.usersPlanets)
       .insert({

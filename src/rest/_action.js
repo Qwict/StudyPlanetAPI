@@ -1,6 +1,7 @@
 const Joi = require('joi');
-const jwt = require('jsonwebtoken');
 const Router = require('@koa/router');
+const emoji = require('node-emoji');
+
 const {
   authorization,
   permissions,
@@ -15,7 +16,7 @@ const actionService = require('../service/action');
 
 const startDiscovering = async (ctx) => {
   const logger = getLogger();
-  logger.info("START DISCOVER", ctx.state.user.name)
+  logger.info(`${emoji.get('coffee')} Action: ${ctx.state.user.name} started Discovering`)
   let userId = ctx.state.user.id
   let selectedTime = ctx.request.body.selectedTime
   await actionService.startDiscovering(userId, selectedTime);
@@ -35,7 +36,7 @@ startDiscovering.validationScheme = {
 
 const stopDiscovering = async (ctx) => {
   const logger = getLogger();
-  logger.info("STOP DISCOVER:", ctx.state.user.email)
+  logger.info(`${emoji.get('coffee')} Action: ${ctx.state.user.name} stopped Discovering`)
   let userId = ctx.state.user.id
   let discoveredPlanet = await actionService.stopDiscovering(userId);
   ctx.body = discoveredPlanet;
@@ -55,7 +56,7 @@ const stopDiscovering = async (ctx) => {
 
 const startExploring = async (ctx) => {
   const logger = getLogger();
-  logger.info(`START EXPLORE: ${ctx.state.user.name}, ${ctx.request.body.planetId}`)
+  logger.info(`${emoji.get('coffee')} Action: ${ctx.state.user.name} started EXPLORING Planet(id: ${ctx.request.body.planetId})`)
   let userId = ctx.state.user.id
   let selectedTime = ctx.request.body.selectedTime
   let planetId = ctx.request.body.planetId
@@ -78,7 +79,7 @@ startExploring.validationScheme = {
 
 const stopExploring = async (ctx) => {
   const logger = getLogger();
-  logger.info("STOP MINE FORM:", ctx.state.user.name)
+  logger.info(`${emoji.get('coffee')} Action: ${ctx.state.user.name} stopped EXPLORING`)
   let userId = ctx.state.user.id
   let response = await actionService.stopExploring(userId);
   ctx.body = response;
