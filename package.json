@@ -1,6 +1,6 @@
 {
   "name": "study_planet_api",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "main": "index.js",
   "repository": "https://github.com/Qwict/StudyPlanetNodeAPI",
   "author": "Joris Van Duyse <64415571+jorisvanduyse@users.noreply.github.com>",
